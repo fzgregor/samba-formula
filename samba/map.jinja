@@ -1,0 +1,19 @@
+{# hello this is the platform dependent lookup table #}
+{# we do a lookup lookup based on the os and not the os_family as usual #}
+{# why? - have a look(up) for the debian and ubuntu service name #}
+
+{# if you add new options please also update the pillar.example file for documentation purposes #}
+{% set samba = salt['grains.filter_by'] ({
+  'Debian': {
+    'smbclient_pkg': 'smbclient',
+    'service':       'samba'
+  },
+  'Ubuntu': {
+    'smbclient_pkg': 'smbclient',
+    'service':       'smbd'
+  },
+  'CentOS': {
+    'smbclient_pkg': 'samba-client',
+    'service':       'smb'
+  },
+}, "os", merge=salt['pillar.get']('samba.lookup')) %}

@@ -1,0 +1,113 @@
+samba:
+
+  # overwrite settings for your customized platform 
+  # usually this shouldn't be necessary
+  # have a look at samba/map.jinja for more information
+  #lookup:
+    # the package that contains the smbclient program
+    #smbclient_pkg:
+    # the service name of smbd
+    #service:
+
+  # this dict will generate the smb.conf file
+  # subdicts will create sections
+  # each name:value pair of the subdicts will create a name = value line in the specific section
+  # underlines will become spaces in the config file
+  # have a look at the smb.conf manpage (eg. http://www.samba.org/samba/docs/man/manpages-3/smb.conf.5.html) for more info
+  smb_conf:
+
+    global:
+      # name of the server
+      server string: MySambaHost
+      # set this option if you don't want to use any authentication
+      # you probabily don't wanna do this
+      #auth_methods: guest
+
+      # only bind on the interfaces listed in interfaces
+      #bind_interfaces_only: "yes"
+      # a list of interfaces to bind
+      #interfaces: eth1 192.168.0.0/24
+      # match anonymous access to this unix user
+      guest account: guest
+      # integer 0 is lowest
+      log level: 3
+
+    elmo_erni:
+      # comment, can be seen by users
+      comment: a "hidden" share for unix users elmo and erni, which will access it with root privileges so they don't care about unix permissions
+      # active or not
+      available: yes
+      # admin users will access the share as root!
+      admin users: elmo, erni
+      # filesystem path
+      path: /tmp/elmo_erni
+      # list this share in the servers public share list
+      browseable: no
+      writable: yes
+    
+    sesame:
+      comment: share for the whole sesamestreet, elmo and little_bird push their stuff into it, everybody from the sesamestreet group can read it 
+      available: yes
+      path: /tmp/sesame
+      # all samba users access this share via the big_bird unix user
+      # they still have to authenticate with their own credentials
+      #force user: big_bird
+      # new files will get this mode
+      force create mode: "0670"
+      # new directories will get this mode
+      force directory mode: "0670"
+      # limit access to this share
+      #hosts allow: "10.0.0.0/24 EXCEPT 10.0.0.4, 192.168.0.0/24"
+      # all users that are part of the unix group sesamestreet should have access
+      valid users: "@sesamestreet"
+      # give certain users write access
+      write list: elmo, little_bird 
+      #writable: True
+      force group: sesamestreet
+
+    public:
+      comment: a public share, everyone access it anonymously but access is logged 
+      available: yes
+      path: /tmp/public
+      # guests can access this share
+      guest ok: yes
+      # all users are treated as guests
+      guest only: yes
+      # don't allow access from this origin
+      hosts deny: 36.13.0.0/16
+      # give write permission to all users
+      writeable: yes
+      # execute this command before a users access the share as root
+      root preexec: /bin/false
+      # close connection if preexec exits with a non-zero return code
+      root preexec close: yes
+
+  # these users will be created with no home directory, no unix password and /usr/bin/nologin as shell
+  # so they wont be able to login to the machine
+  users:
+    big_bird: # login of the user
+      # optional, file ownership is uid based
+      uid: 3000
+      # optional, additonal groups, usefull if you want to share data only in certain groups
+      groups:
+        - sesamestreet
+      # optional, delete this user
+      delete: false
+      # mandatory, samba login password
+      smbpass: big_bird
+    little_bird:
+      smbpass: little_bird
+      groups: [sesamestreet]
+    erni:
+      smbpass: erni
+      groups: [sesamestreet]
+    elmo:
+      smbpass: elmo
+      groups: [sesamestreet]
+    guest:
+      smbpass: pointless - this is the guest account (see global section in smb_conf)
+
+  # create or remove unix groups
+  groups:
+    sesamestreet: present
+    not_used_anymore: absent
