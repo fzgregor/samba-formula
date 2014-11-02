@@ -5,8 +5,8 @@ smbclient:
     - installed
     - name: {{ samba.smbclient_pkg }}
 
-# create users for samba access and set SAM password 
-{% for user, data in pillar.get('samba').get("users", {}).items() %}
+# create users for samba access and set SAM password
+{% for user, data in pillar.get('samba', {}).get("users", {}).items() %}
 {{user}}:
   {% if (data.get("delete", false)) %}
     # delete unix user
@@ -49,11 +49,11 @@ smbclient:
     # add user to SAM database aka set password
     {% set smbpass = data["smbpass"] %} {# if this fails there is no password in the pillar! #}
     cmd.run:
-      - name: printf "$smbpass\n$smbpass\n" | pdbedit -t -a {{user}} 
+      - name: printf "$smbpass\n$smbpass\n" | pdbedit -t -a {{user}}
       - unless: pdbedit -u {{user}} && test -n '$smbpass' && smbclient -L localhost -U {{user}}%"$smbpass"
       - env:
-        - 'smbpass': '{{smbpass}}' 
-      {% if (not grains['host'].endswith("test")) %} 
+        - 'smbpass': '{{smbpass}}'
+      {% if (not grains['host'].endswith("test")) %}
       - output_loglevel: quiet
       {% endif %}
       - user: root
@@ -67,7 +67,7 @@ smbclient:
 {% endfor %}
 
 # add or remove groups for multi user shares
-{% for key, value in pillar.get("samba").get("groups", {}).items() %}
+{% for key, value in pillar.get("samba", {}).get("groups", {}).items() %}
 {{key}}:
   group.{{value}}
 {% endfor %}

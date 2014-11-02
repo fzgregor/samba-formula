@@ -6,7 +6,7 @@ samba:
 
   service:
     - running
-    - name: {{ samba.service }} 
+    - name: {{ samba.service }}
     - reload: True
     - enable: True
     - watch:
@@ -20,7 +20,7 @@ samba:
     - mode: 644
     - template: jinja
     - contents: |
-      {% set smb_conf = pillar.get("samba")["smb_conf"] %}
+      {% set smb_conf = pillar.get("samba", {'smb_conf':{}})["smb_conf"] %}
       {% for section, options in smb_conf.items() %}
         [{{section}}]
         {% for name, value in options.items() %}
