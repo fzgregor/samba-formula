@@ -29,8 +29,14 @@ samba:
       #interfaces: eth1 192.168.0.0/24
       # match anonymous access to this unix user
       guest account: guest
-      # integer 0 is lowest
-      log level: 3
+
+      # speed improvements
+      # integer 0 is most verbose, should be at least 2, samba is very verbose
+      log level: 2
+      # options to speed up the network communication
+      socket options: TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=65536 SO_SNDBUF=65536
+      # use opportunistic locking
+      oplocks: yes
 
     elmo_erni:
       # comment, can be seen by users
